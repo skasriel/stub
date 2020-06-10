@@ -1,0 +1,72 @@
+<!-- Category Browser -->
+<script type="module" src="/javascripts/categories.js"></script>
+<nav class="navbar navbar-expand-lg navbar-light bg-light" id="nav" style="margin-bottom: 1rem">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item dropdown" v-for="cat1 in CatL1">
+                <a class="nav-link dropdown-toggle" :href="getCat1URL(cat1)" id="navbarDropdown" role="button"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{cat1}}
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                    <ul class="nav flex-column">
+                        <li v-for="cat2 in CatL2(cat1)" class="nav-item">
+                            <a class="dropdown-item" :href="getCat2URL(cat1, cat2)">{{cat2}}</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+<script type="module">
+    import { Taxonomy } from '/javascripts/categories.js'
+    function getURLFromCategoryNames(cat1, cat2) {
+        let url = `/category/${cat1}`;
+        if (cat2)
+            url += (cat2) ? `/${cat2}` : '';
+        url = url.replace(/ & /g, '-').replace(/ /g, '-').replace(/\-\-/g, '-').toLowerCase(); // same as CategoryRoute
+        return url;
+    }
+
+    var app = new Vue({
+        el: '#nav',
+        data: {
+        },
+        computed: {
+            CatL1: function() {
+                return Taxonomy.map(x => x.l1);
+            },
+            CatL2: function() {
+                var vm = this;
+                return function(cat1) {
+                    console.log(`Looking for l2s under ${cat1}`);
+                    const l1 = Taxonomy.filter(x => x.l1===cat1)[0];
+                    console.log(`Found L1 as ${JSON.stringify(l1)}`);
+                    const l2 = l1.sub.map(x => x.l2);
+                    console.log(`Found: ${l2}`);
+                    return l2;
+                }
+            }
+        },
+        mounted: function () {
+
+        },
+        methods: {
+            getCat1URL(cat1) {
+                return getURLFromCategoryNames(cat1, null);
+            },
+            getCat2(cat1) {
+                return CatL2[cat1];
+            },
+            getCat2URL(cat1, cat2) {
+                return getURLFromCategoryNames(cat1, cat2);
+            }
+        }
+    });
+</script>

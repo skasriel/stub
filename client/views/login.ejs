@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Project X > Signup</title>
+	<%- include ./partials/head %>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+
+	<style>
+		.form-signin {
+			max-width: 400px;
+			display: block;
+			background-color: #f7f7f7;
+			-moz-box-shadow: 0 0 3px 3px #888;
+			-webkit-box-shadow: 0 0 3px 3px #888;
+			box-shadow: 0 0 3px 3px #888;
+			border-radius: 2px;
+		}
+
+		.main {
+			padding: 38px;
+		}
+
+		.social-box {
+			margin: 0 auto;
+			padding: 38px;
+			border-bottom: 1px #ccc solid;
+		}
+
+		.social-box a {
+			font-weight: bold;
+			font-size: 18px;
+			padding: 8px;
+		}
+
+		.social-box a i {
+			font-weight: bold;
+			font-size: 20px;
+		}
+
+		.heading-desc {
+			font-size: 20px;
+			font-weight: bold;
+			padding: 38px 38px 0px 38px;
+
+		}
+
+		.form-signin .form-signin-heading,
+		.form-signin .checkbox {
+			margin-bottom: 10px;
+		}
+
+		.form-signin .checkbox {
+			font-weight: normal;
+		}
+
+		.form-signin .form-control {
+			position: relative;
+			font-size: 16px;
+			height: 20px;
+			padding: 20px;
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+		}
+
+		.form-signin .form-control:focus {
+			z-index: 2;
+		}
+
+		.form-signin input[type="text"] {
+			margin-bottom: 10px;
+			border-radius: 5px;
+
+		}
+
+		.form-signin input[type="password"] {
+			margin-bottom: 10px;
+			border-radius: 5px;
+		}
+
+		.login-footer {
+			background: #f0f0f0;
+			margin: 0 auto;
+			border-top: 1px solid #dadada;
+			padding: 20px;
+		}
+
+		.login-footer .left-section {
+			color: #8a8a8a;
+			line-height: 19px;
+		}
+
+		.mg-btm {
+			margin-bottom: 20px;
+		}
+	</style>
+</head>
+
+<body>
+	<%- include ./partials/b_topnav %>
+	<br><br><br>
+
+	<div class="container">
+		<div class="row">
+			<form class="form-signin mg-btm" 
+			<% if (returnTo) { %>
+				action="<%=returnTo%>"
+			<% } else { %>
+				action="/" 
+			<% } %>
+			id="form" @submit.prevent="processLoginForm"
+				class="needs-validation" novalidate>
+				<h3 class="heading-desc">
+					<button type="button" class="close pull-right" aria-hidden="true">×</button>
+					Login to Up5</h3>
+				<div class="social-box">
+					<div class="row mg-btm">
+						<div class="col-md-12">
+							<a href="#" class="btn btn-primary btn-block">
+								<i class="icon-facebook"></i> Login with Facebook
+							</a>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-md-12">
+							<a href="#" class="btn btn-info btn-block">
+								<i class="icon-twitter"></i> Login with Twitter
+							</a>
+						</div>
+					</div>
+				</div>
+
+				<section v-if="isErrored" class="alert alert-warning" role="alert">
+					<p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
+				</section>
+				<section v-else-if="isLoading">
+					<div class="alert alert-info" role="alert">Loading...</div>
+				</section>
+				<section v-else>
+					<section v-if="errors.length>0">
+						<div class="alert alert-warning" role="alert">
+							<ul>
+								<error-message v-for="error in errors" v-bind:error="error" v-bind:key="error.id" />
+							</ul>
+						</div>
+					</section>
+
+					<div class="main">
+						<input type="text" class="form-control" placeholder="Email" autofocus v-model="form.username">
+						<input type="password" class="form-control" placeholder="Password" v-model="form.password">
+						<span class="clearfix"></span>
+					</div>
+
+					<div class="login-footer">
+						<div class="row">
+							<div class="col-xs-6 col-md-6">
+								<div class="left-section">
+									<a href="#">Forgot your password?</a><br>
+									Don't have an account? <a href="signup">Sign up here</a>								
+								</div>
+							</div>
+							<div class="col-xs-6 col-md-6 pull-right">
+								<button type="submit" class="btn btn-large btn-danger pull-right">Login</button>
+							</div>
+						</div>
+					</div>
+				</section>
+			</form>
+		</div>
+	</div>
+
+
+	<%- include ./partials/footer %>
+
+	<script>
+		const apiURI = '/user/login';
+		var app = new Vue({
+			el: '#form',
+			data: {
+				isLoading: false,
+				isErrored: false,
+				errors: [],
+				form: {
+					username: '',
+					password: '',
+				}
+			},
+			methods: {
+				processLoginForm() {
+					const data = this.form;
+					this.isLoading = true;
+					fetch(apiURI, {
+						method: "POST",
+						body: JSON.stringify(data),
+						headers: { "content-type": "application/json" }
+					})
+						.then(response => response.json())
+						.then(result => {
+							this.isLoading = false;
+							if (result.errors) {
+								console.log("! Errors - server responded with " + JSON.stringify(result));
+								this.errors = result.errors;
+							} else {
+								console.log("No errors - server responded with " + JSON.stringify(result));
+								console.log("Redirecting from " + window.location.href + " to " + form.action);
+								this.errors = [];
+								window.location.href = form.action;
+							}
+						}).catch(error => {
+							this.isErrored = true;
+						}).finally(() => { this.isLoading = false })
+				}
+			}
+		});
+	</script>
+
+</body>
+
+</html>

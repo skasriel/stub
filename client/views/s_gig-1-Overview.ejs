@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Create Gig</title>
+    <% include ../partials/head %>
+</head>
+
+<body>
+    <% include ../partials/s_topnav %>
+
+    <script src="/javascripts/categories.js"></script>
+
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page"><a href="#">Overview</a></li>
+            <li class="breadcrumb-item" aria-current="page">Pricing</a></li>
+            <li class="breadcrumb-item" aria-current="page">Description & FAQ</li>
+            <li class="breadcrumb-item" aria-current="page">Requirements</li>
+            <li class="breadcrumb-item" aria-current="page">Gallery</li>
+            <li class="breadcrumb-item" aria-current="page">Publish</li>
+        </ol>
+    </nav>
+
+    <main role="main" class="container">
+
+        <div class="bg-white text-dark">
+            <form action="pricing" id="form" @submit.prevent="processNewGigOverview" class="needs-validation"
+                novalidate>
+                <section v-if="isErrored" class="alert alert-warning" role="alert">
+                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
+                </section>
+                <section v-else-if="isLoading">
+                    <div class="alert alert-info" role="alert">Loading...</div>
+                </section>
+                <section v-else>
+                    <section v-if="errors.length>0">
+                        <div class="alert alert-warning" role="alert">
+                            <ul>
+                                <error-message v-for="error in errors" v-bind:error="error" v-bind:key="error.id" />
+                            </ul>
+                        </div>
+                    </section>
+
+                    <div class="pt-5 pb-5 pl-5 pr-5">
+                        <div class="form-group row">
+                            <label for="i_will" class="col-sm-2 col-form-label">I Will</label>
+                            <div class="col-sm-10">
+                                <input type="text" id="i_will" name="i_will" v-model="form.i_will"
+                                    placeholder="do something I'm really good at" class="form-control form-control-lg"
+                                    required />
+                                <small id="i_will_help" class="form-text text-muted">{{form.i_will.length}}/80
+                                    characters max</small>
+                                <div class="invalid-feedback">
+                                    Gig title needs to be between 20 and 80 characters.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="category" class="col-sm-2 col-form-label">Category</label>
+                            <div class="col-sm-4">
+                                <select name="cat1" id="cat1" v-model="form.cat1" class="form-control">
+                                    <option value="" disabled selected>Select a category</option>
+                                    <option :value="cat" v-for="cat in getCatL1()">
+                                        {{cat}}
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-sm-4">
+                                <select name="cat2" id="cat2" v-model="form.cat2" class="form-control">
+                                    <option value="" disabled selected>Select a subcategory</option>
+                                    <option :value="subcat" v-for="subcat in getCatL2()">
+                                        {{subcat}}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label for="search_tags" class="col-sm-2 col-form-label">Search Tags</label>
+                            <div class="col-sm-10">
+                                <input type="text" id="search_tags" name="search_tags" v-model="form.search_tags"
+                                    class="form-control" required />
+                                <div class="invalid-feedback">
+                                    Please select no more than 5 search tags
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pb-5 pl-5 pr-5">
+                        <button type="cancel" class="btn btn-outline-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save & Continue</button>
+                    </div>
+                </section>
+            </form>
+        </div>
+
+    </main>
+
+    <% include ../partials/footer %>
+
+    <script>
+        let initialData = JSON.parse(window.atob(`<%- locals.passValue(gigData) %>`));
+        var app = new Vue({
+            el: '#form',
+            data: {
+                isLoading: false,
+                isErrored: false,
+                errors: [],
+                form: {
+                    i_will: '',
+                    cat1: '',
+                    cat2: '',
+                    search_tags: '#design'
+                }
+            },
+            mounted: function () {
+                if (initialData) {
+                    this.form = initialData;
+                    console.log(`Fill form using local data`);
+                } /*else {
+                    console.log(`Fetching initial data from server`);
+                    const currentURL = window.location.href;
+                    console.log(`Current URL ${currentURL}`);
+                    if (currentURL.includes('/edit/')) {
+                        const url = currentURL.replace('/edit/', '/data/').replace('/create/', '/data/');
+                        console.log(`Fetching from ${url}`);
+                        fetch(url).then(response => response.json())
+                            .then(result => {
+                                console.log(`Received from server: ${result}`);
+                                if (result)
+                                    this.form = result;
+                            });
+                    }
+                } */
+            },
+            methods: {
+                getCatL1() {
+                    return CatL1;
+                },
+                getCatL2() {
+                    return CatL2[this.form.cat1];
+                },
+                processNewGigOverview() {
+                    console.log('processNewGigOverview: ' + JSON.stringify(this.form));
+                    this.isLoading = true;
+                    fetch('overview', {
+                        method: "POST",
+                        body: JSON.stringify(this.form),
+                        headers: { "content-type": "application/json" }
+                    })
+                        .then(response => response.json())
+                        .then(result => {
+                            this.isLoading = false;
+                            if (result.errors) {
+                                console.log("! Errors - server responded with " + JSON.stringify(result));
+                                this.errors = result.errors;
+                            } else {
+                                console.log("No errors - server responded with " + JSON.stringify(result));
+                                console.log("Redirecting from " + window.location.href + " to " + result.url);
+                                window.location.href = result.url;
+                            }
+                        }).catch(error => {
+                            this.isErrored = true;
+                        }).finally(() => { this.isLoading = false })
+                }
+            }
+        });
+
+        /*{"errors":[
+          {"value":"","msg":"Must be between 100 and 500 characters","param":"i_will","location":"body"},
+          {"msg":"Invalid value","param":"category","location":"body"},
+          {"value":"","msg":"Invalid value","param":"search_tags","location":"body"}
+        ]}*/
+    </script>
+</body>
+
+</html>

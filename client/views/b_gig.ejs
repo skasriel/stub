@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Buy Gig</title>
+  <% include ../partials/head %>
+
+  <!-- Vuetify-->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+  <!-- unpkg -->
+<link rel="stylesheet" href="https://unpkg.com/vue-file-agent@latest/dist/vue-file-agent.css" />
+<script src="https://unpkg.com/vue-file-agent@latest/dist/vue-file-agent.umd.js"></script>
+
+</head>
+
+<body id="app" class="buyer">
+  <% include ../partials/b_category_nav %>
+
+  <main role="main" class="container">
+
+          <b-breadcrumb>
+            <b-breadcrumb-item href="/">Home</b-breadcrumb-item>
+            <b-breadcrumb-item href="/category/<%-encodeURL(gigDocument.cat1)%>"><%-gigDocument.cat1 %>
+            </b-breadcrumb-item>
+            <b-breadcrumb-item active href="/category/<%-encodeURL(gigDocument.cat2)%>"><%-gigDocument.cat2 %>
+            </b-breadcrumb-item>
+          </b-breadcrumb>
+
+
+              <form action="/buy/checkout/customize/<%=sellerUsername%>/<%=sku%>" method="get">
+                <b-button size="lg" type="submit" id="checkout_button" variant="success">
+                  Continue ($<%= gigDocument.package_price %>)
+                </b-button>
+              </form>
+  </main>
+
+
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          items: [
+        <% for(pic of gigDocument.galleryPictures) { %>
+      { src: '<%=pic%>', },
+        <% } %>
+        ],
+      }
+    },
+  })
+  </script>
+
+</body>
+
+</html>

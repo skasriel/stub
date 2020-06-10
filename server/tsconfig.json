@@ -1,0 +1,57 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "allowJs": true,
+        "esModuleInterop": true,
+        "target": "es6",
+        "noImplicitAny": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist",
+        "baseUrl": ".",
+        "skipLibCheck": true,
+        "types": [
+            "node", "mocha", "jest"
+        ],    
+        "paths": {
+            "*": [
+                "node_modules/*"
+            ]
+        }
+    },
+    "include": [
+        "app.ts",
+        "src/**/*",
+        "routes/*",
+        "routes/**/*",
+        "contollers/*",
+        "controllers/**/*",
+        "lib/*",
+        "lib/**/*",
+        "config/*",
+        "config/**/*",
+        "views/*",
+        "views/**/*",
+
+        "src/app.ts",
+        "src/routes/*",
+        "src/routes/**/*",
+        "src/contollers/*",
+        "src/controllers/**/*",
+        "src/lib/*",
+        "src/lib/**/*",
+        "src/config/*",
+        "src/config/**/*"
+    ],
+    "exclude": [
+        "*.test.ts", 
+        "*.test.js",
+        "node_modules",
+        "tests/*",
+        "tests/**/*"
+    ],
+    "preset": [
+        "ts-jest",
+        "@shelf/jest-mongodb"
+    ]
+}

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Project X > Signup</title>
+    <% include ./partials/head %>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/all.css">
+</head>
+
+<body>
+    <% include ./partials/b_topnav %>
+    <br><br><br>
+
+    <div class="card bg-light">
+        <article class="card-body mx-auto" style="max-width: 400px;">
+            <h4 class="card-title mt-3 text-center">Sign up</h4>
+            <p>
+                <a href="" class="btn btn-block btn-twitter"> <i class="fab fa-twitter"></i>Sign up with Twitter</a>
+                <a href="" class="btn btn-block btn-facebook"> <i class="fab fa-facebook-f"></i>Sign up with facebook</a>
+            </p>
+            <p class="divider-text">
+                <span class="bg-light">OR</span>
+            </p>
+
+            <form 
+                <% if (returnTo) { %>
+				action="<%=returnTo%>"
+				<% } else { %>
+                action="/" 
+                <% } %>
+                id="form" @submit.prevent="processSignupForm" class="needs-validation" novalidate>
+
+                <section v-if="isErrored" class="alert alert-warning" role="alert">
+                    <p>We're sorry, we're not able to retrieve this information at the moment, please try back later</p>
+                </section>
+                <section v-else-if="isLoading">
+                    <div class="alert alert-info" role="alert">Loading...</div>
+                </section>
+                <section v-else>
+                    <section v-if="errors.length>0">
+                        <div class="alert alert-warning" role="alert">
+                            <ul>
+                                <error-message v-for="error in errors" v-bind:error="error" v-bind:key="error.id" />
+                            </ul>
+                        </div>
+                    </section>
+
+                    <div class="form-group input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                        </div>
+                        <input name="" class="form-control" placeholder="First name" type="text" v-model="form.firstName">
+                    </div>
+                    <div class="form-group input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-user"></i> </span>
+                        </div>
+                        <input name="" class="form-control" placeholder="Last name" type="text" v-model="form.lastName">
+                    </div>
+
+                    <div class="form-group input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+                        </div>
+                        <input name="" class="form-control" placeholder="Email address" type="email" v-model="form.email">
+                    </div>
+
+                    <div class="form-group input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-envelope"></i> </span>
+                        </div>
+                        <input name="" class="form-control" placeholder="User name" type="text" v-model="form.username">
+                    </div>
+
+
+                    <div class="form-group input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+                        </div>
+                        <input class="form-control" placeholder="Create password" type="password" v-model="form.password1">
+                    </div> 
+                    <div class="form-group input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"> <i class="fa fa-lock"></i> </span>
+                        </div>
+                        <input class="form-control" placeholder="Repeat password" type="password" v-model="form.password2">
+                    </div> 
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block"> Sign up </button>
+                    </div> 
+                    <p class="text-center">Have an account? <a href="login">Log In</a> </p>
+            </form>
+        </article>
+    </div>
+
+    <% include ./partials/footer %>
+
+    <script>
+        const apiURI = '/user/signup';
+        var app = new Vue({
+          el: '#form',
+          data: {
+            isLoading: false,
+            isErrored: false,
+            errors: [],
+            form: {
+              firstName: '',
+              lastName: '',
+              username: '',
+              password1: '',
+              password2: '',
+            }
+          },
+          methods: {
+            processSignupForm() {
+              console.log('process: '+JSON.stringify(this.form));
+              const data = this.form;
+              if (data.password1 != data.password2) {
+                  this.errors = {param: 'Password', msg: 'Passwords do not match'};
+                  return;
+              }
+              data.password = data.password1;
+              this.isLoading = true;
+              fetch(apiURI, {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: { "content-type": "application/json" }
+              })
+              .then(response => response.json())
+              .then(result => {
+                this.isLoading = false;
+                if (result.errors) {
+                  console.log("! Errors - server responded with "+JSON.stringify(result));
+                  this.errors = result.errors;
+                } else {
+                  console.log("No errors - server responded with "+JSON.stringify(result));
+                  console.log("Redirecting from "+window.location.href+" to "+form.action);
+                  this.errors = [];
+                  window.location.href = form.action;
+                }
+              }).catch(error => {
+                this.isErrored = true;
+              }).finally( () => {this.isLoading=false} )
+            }
+          }
+        });
+    </script>
+</body>
+
+</html>
